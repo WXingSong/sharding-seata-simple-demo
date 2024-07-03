@@ -1,0 +1,66 @@
+databaseName: shading_config
+
+mode:
+  type: Standalone
+  repository:
+    type: JDBC
+
+dataSources:
+  master:
+    dataSourceClassName: com.alibaba.druid.pool.DruidDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.110.43:3306/yudao?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+    username: root
+    password: admin123
+    # Druid数据源特有配置
+    initialSize: 5 # 初始连接数
+    minIdle: 10 # 最小连接池数量
+    maxActive: 20 # 最大连接池数量
+    maxWait: 600000 # 配置获取连接等待超时的时间，单位：毫秒
+    timeBetweenEvictionRunsMillis: 60000 # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位：毫秒
+    minEvictableIdleTimeMillis: 300000 # 配置一个连接在池中最小生存的时间，单位：毫秒
+    maxEvictableIdleTimeMillis: 900000 # 配置一个连接在池中最大生存的时间，单位：毫秒
+    validationQuery: SELECT 1 FROM DUAL # 配置检测连接是否有效
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+  slave_1:
+    dataSourceClassName: com.alibaba.druid.pool.DruidDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.110.43:3306/yudao?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+    username: root
+    password: admin123
+    # Druid数据源特有配置
+    initialSize: 5 # 初始连接数
+    minIdle: 10 # 最小连接池数量
+    maxActive: 20 # 最大连接池数量
+    maxWait: 600000 # 配置获取连接等待超时的时间，单位：毫秒
+    timeBetweenEvictionRunsMillis: 60000 # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位：毫秒
+    minEvictableIdleTimeMillis: 300000 # 配置一个连接在池中最小生存的时间，单位：毫秒
+    maxEvictableIdleTimeMillis: 900000 # 配置一个连接在池中最大生存的时间，单位：毫秒
+    validationQuery: SELECT 1 FROM DUAL # 配置检测连接是否有效
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+rules:
+- !SINGLE # 配置分片规则
+  tables:
+    - "*.*" # 加载全部单表
+- !READWRITE_SPLITTING
+  dataSources:
+    readwrite_ds:
+      writeDataSourceName: master
+      readDataSourceNames:
+        - slave_1
+      transactionalReadQueryStrategy: PRIMARY
+      loadBalancerName: random
+  loadBalancers:
+    random:
+      type: RANDOM
+
+transaction:
+  defaultType: BASE
+  providerType: Seata
+
+props:
+  sql-show: true
